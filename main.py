@@ -7,6 +7,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
+# Config
+config = configparser.ConfigParser()
+config.read("config.ini")
+
 # Driver Setup
 executable_path = "./chromedriver"
 options = webdriver.ChromeOptions()
@@ -14,12 +18,10 @@ options.add_argument("--no-proxy-server")
 options.add_argument("--disable-extensions")
 options.add_argument('--hide-scrollbars')
 options.add_argument('--disable-gpu')
+if config.getboolean("SELENIUM", "HEADLESS"):
+    options.add_argument('--headless')
 driver = webdriver.Chrome(executable_path=executable_path, options=options)
 driver.get("https://www.instagram.com")
-
-# Config
-config = configparser.ConfigParser()
-config.read("config.ini")
 
 # Login
 time.sleep(5)
@@ -40,13 +42,13 @@ time.sleep(10)
 notifictaions = driver.find_element(By.XPATH, "//button[contains(text(), 'Not Now')]").click()
 
 # FastAPI
-app = FastAPI(title='InstaPy')
+app = FastAPI(title="InstaPy")
 
-@app.get('/', include_in_schema=False)
+@app.get("/", include_in_schema=False)
 async def redirect_root():
     return starlette.responses.RedirectResponse('/redoc')
 
-@app.get('/api/v1/searchName')
+@app.get("/api/v1/searchName")
 async def search_name(name: str):
     searchbox = driver.find_element(By.CSS_SELECTOR, "input[placeholder='Search']")
     searchbox.clear()
